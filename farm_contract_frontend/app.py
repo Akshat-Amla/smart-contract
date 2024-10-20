@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect
-from solathon import Client, Transaction, PublicKey
-from solathon.utils import to_lamports
+from solathon import Client, Transaction, PublicKey, Keypair
+from solana.transaction import Transaction as SolanaTransaction
 import json
 import threading
 import time
@@ -29,36 +29,39 @@ def submit_contract():
     farmer_pubkey = request.form['farmer']
     buyer_pubkey = request.form['buyer']
     crop_type = request.form['cropType']
-    agreed_price = int(request.form['agreedPrice'])
+    agreed_price = float(request.form['agreedPrice'])
     quality_score = int(request.form['qualityScore'])
     duration = int(request.form['duration'])
     contract_type = request.form['contractType']
 
     # Create a Solana transaction here
-    transaction = Transaction()
+    transaction = SolanaTransaction()
 
     # Create an instruction to transfer funds as part of the contract (if applicable)
     try:
-        # Convert agreed_price to lamports
-        amount_lamports = to_lamports(agreed_price)
+        # Convert agreed_price to lamports (1 SOL = 1,000,000,000 lamports)
+        amount_lamports = int(agreed_price * 1_000_000_000)
         
         # Create transfer instruction
         transfer_instruction = Transaction.transfer(
             from_public_key=PublicKey(farmer_pubkey),
             to_public_key=PublicKey(buyer_pubkey),
-            amount_of_sol=amount_lamports
+            amount_of_lamports=amount_lamports
         )
         transaction.add(transfer_instruction)
 
+        # Create a dummy keypair for signing (replace this with actual keypair in production)
+        dummy_keypair = Keypair()
+
         # Send the transaction
-        response = client.send_transaction(transaction, PublicKey(farmer_pubkey))
+        response = client.send_transaction(transaction, dummy_keypair)
         
         # Check response for success
-        if not response.success:
-            print(f"Transaction failed: {response.error}")
+        if not response['result']:
+            print(f"Transaction failed: {response}")
             return redirect('/')
         
-        print(f"Transaction successful: {response.transaction_hash}")
+        print(f"Transaction successful: {response['result']}")
         
     except Exception as e:
         print(f"Transaction creation or sending failed: {str(e)}")
