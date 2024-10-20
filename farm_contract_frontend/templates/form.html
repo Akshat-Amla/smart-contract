@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Farm Contract</title>
+</head>
+<body>
+    <h1>Create Farm Contract</h1>
+
+    <!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form action="/submit" method="POST">
+        Farmer Address: <input type="text" name="farmer" required><br>
+        Buyer Address: <input type="text" name="buyer" required><br>
+        Crop Type: <input type="text" name="cropType" required><br>
+        Agreed Price: <input type="number" name="agreedPrice" required><br>
+        Quality Score: <input type="number" name="qualityScore" required><br>
+        Duration (mins): <input type="number" name="duration" required><br>
+        Contract Type: <select name="contractType">
+            <option value="lease">Lease</option>
+            <option value="preHarvest">Pre-Harvest</option>
+            <option value="postHarvest">Post-Harvest</option>
+        </select><br><br>
+        <button type="submit">Create Contract</button>
+    </form>
+</body>
+</html>
